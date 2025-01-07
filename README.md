@@ -21,6 +21,11 @@
 - `/editor`
 - paste in your spec from `specs/`
 
+### Architect
+- `aider --o1-preview --architect --editor-model claude-3-5-sonnet-2024-10-22`
+  - add beginning context files
+  - copy and paste spec into aider chat
+
 ### ADWs 
 
 - `uv run python adw/adw_bump_version.template.py`
