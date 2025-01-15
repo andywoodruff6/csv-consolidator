@@ -5,8 +5,44 @@
 - `cp .env.sample .env`
   - Update with your keys
 - `uv sync`
-- `uv run python main.py`
 - Start AI Coding!
+
+## Running the Program
+
+To run the main program:
+```bash
+uv run python main.py
+```
+
+This will:
+1. Check and create the weekly tracker file if needed
+2. Update the tracker with new export data
+3. Generate a line chart visualization
+
+```mermaid
+flowchart TD
+    A[Start main.py] --> B[check_weekly_file_exists]
+    B -->|File exists| C[update_weekly_tracker]
+    B -->|File missing| D[Create new tracker file]
+    D --> C
+    C -->|Read newest export| E[get_new_export]
+    E -->|Convert times| F[convert_cols_to_minutes]
+    F -->|Update totals| G[update_tracker]
+    G --> H[generate_line_chart]
+    H -->|Read CSV| I[Load and filter data]
+    I -->|Create visualization| J[Plot metrics]
+    J -->|Save chart| K[save_chart]
+    K --> L[End]
+```
+
+## Running Tests
+
+To run all tests:
+```bash
+uv run pytest tests/
+```
+
+This will execute all test files in the `tests/` directory.
 
 ## Aider
 
