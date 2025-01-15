@@ -4,12 +4,12 @@ import seaborn as sns
 from pathlib import Path
 import datetime
 
-def generate_line_chart():
+def generate_bar_chart():
     """
-    Generates a multi-line chart from 'weekly_csv_timelines_tracker.csv' with:
-    - X-axis: Date
-    - Y-axis: Multiple metrics
-    - Title: 'Weekly Timelines Tracker'
+    Generates a bar chart from 'weekly_csv_timelines_tracker.csv' showing:
+    - X-axis: Metrics
+    - Y-axis: Sum of values for the last week
+    - Title: 'Weekly Metrics Summary'
     Saves the chart as '{year}-{week}.png' in '~/SynologyDrive/weekly_review'.
     """
     tracker_path = Path.home() / 'SynologyDrive' / 'weekly_review' / 'weekly_csv_timelines_tracker.csv'
@@ -25,32 +25,35 @@ def generate_line_chart():
     # Convert 'Date' column to datetime if not already
     df['Date'] = pd.to_datetime(df['Date'])
     
-    # Filter data for the last 4 weeks ending with today's date
+    # Filter data for the last week
     end_date = df['Date'].max()
-    start_date = end_date - pd.Timedelta(weeks=4)
+    start_date = end_date - pd.Timedelta(weeks=1)
     df_filtered = df[(df['Date'] >= start_date) & (df['Date'] <= end_date)]
-    
-    # print(f"Filtered DataFrame shape: {df_filtered.shape}")
-    # print("Filtered DataFrame head:\n", df_filtered.head())
     
     if df_filtered.empty:
         print("Error: No data available for plotting after filtering")
         return
     
+    # Get all numeric columns except 'Date' and 'all', then calculate their sums
+    metrics = [col for col in df_filtered.select_dtypes(include=['int64', 'float64']).columns if col.lower() != 'all']
+    sums = df_filtered[metrics].sum()
+    
     # Plotting
     plt.figure(figsize=(12, 7))
     
-    # Get all numeric columns that contain 'total' in their name
-    metrics = [col for col in df_filtered.select_dtypes(include=['int64', 'float64']).columns if 'total' in col.lower()]
-    # print("Plotting total metrics:", metrics)
+    # Define colors based on values
+    colors = ['red' if x < 300 else 'yellow' if x < 500 else 'green' for x in sums.values]
     
-    for metric in metrics:
-        sns.lineplot(data=df_filtered, x='Date', y=metric, marker='o', label=metric.replace(' total', ''))
+    # Create bar chart with colors
+    plt.bar(range(len(sums)), sums.values, color=colors)
+    plt.xticks(range(len(sums)), sums.index, rotation=45, ha='right')
     
-    plt.title('Weekly Timelines Tracker')
-    plt.xlabel('Date')
-    plt.ylabel('Count')
-    plt.legend(title='Metrics', bbox_to_anchor=(1.05, 1), loc='upper left')
+    # Add horizontal line at 600
+    plt.axhline(y=600, color='black', linestyle='-', linewidth=1)
+    
+    plt.title('Weekly Metrics Summary')
+    plt.xlabel('Metrics')
+    plt.ylabel('Minutes')
     plt.tight_layout()
     
     # Save the chart to both locations
